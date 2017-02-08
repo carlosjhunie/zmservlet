@@ -119,6 +119,6 @@
 		</plugin>
 	  </plugins>
       
-      <finalName>zmservlet</finalName>
+      <finalName>pwm-flush-${pom.version}</finalName>
 	</build>
 </project>
