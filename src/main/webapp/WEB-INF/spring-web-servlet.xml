@@ -12,6 +12,12 @@
 
 	<context:component-scan base-package="net.telus.zmclient.web" />
 
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>zimbraws.properties</value>
+		</property>
+	</bean>
+	
 	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
 		<property name="prefix">
 			<value>/WEB-INF/views/</value>

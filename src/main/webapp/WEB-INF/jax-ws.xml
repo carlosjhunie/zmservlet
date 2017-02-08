@@ -29,13 +29,13 @@
 		http://static.springsource.org/spring/docs/3.0.x/spring-framework-reference/html/remoting.html#remoting-web-services
 	 -->
     <bean id="zimbraJaxProxyService" class="org.springframework.remoting.jaxws.JaxWsPortProxyFactoryBean"
-	    p:serviceInterface="com.zimbra.wsdl.zimbraservice.ZcsAdminPortType"
+	    p:serviceInterface="net.telus.zimbra.ws.client.ZcsAdminPortType"
 	    p:wsdlDocumentUrl="classpath:ZimbraAdminService.wsdl"
 	    p:namespaceUri="http://www.zimbra.com/wsdl/ZimbraService.wsdl"
 	    p:serviceName="zcsAdminService"
 	    p:portName="zcsAdminServicePort"
-        p:username="pwmadmin@telus.net"
-        p:password="pwmTesting"
-        p:endpointAddress="https://mtln000101.dev.telus.net:7071/service/admin/soap/"/>
+        p:username="${zimbra.admin.username}"
+        p:password="${zimbra.admin.password}"
+        p:endpointAddress="${zimbra.admin.endpointAddress}"/>
 	
 </beans>
