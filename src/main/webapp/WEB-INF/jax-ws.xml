@@ -34,8 +34,15 @@
 	    p:namespaceUri="http://www.zimbra.com/wsdl/ZimbraService.wsdl"
 	    p:serviceName="zcsAdminService"
 	    p:portName="zcsAdminServicePort"
-        p:username="${zimbra.admin.username}"
-        p:password="${zimbra.admin.password}"
-        p:endpointAddress="${zimbra.admin.endpointAddress}"/>
-	
+        p:endpointAddress="${zimbra.admin.endpointAddress}"
+        p:handlerResolver-ref="zimbraHeaderHandlerResolver"
+        />
+    
+    <bean id="zimbraHeaderHandlerResolver" class="net.telus.zmclient.handler.ZmHeaderHandlerResolver">
+        <property name="handlerList">
+            <list>
+                <bean class="net.telus.zmclient.handler.ZmHeaderHandler" />
+            </list>
+        </property>
+    </bean>
 </beans>
