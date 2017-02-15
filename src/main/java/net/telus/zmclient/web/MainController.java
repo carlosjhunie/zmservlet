@@ -24,7 +24,6 @@ import zimbraadmin.CacheEntryBy;
 import zimbraadmin.CacheEntrySelector;
 import zimbraadmin.CacheSelector;
 import zimbraadmin.FlushCacheRequest;
-import zimbraadmin.FlushCacheResponse;
 import zimbraadmin.GetAccountInfoRequest;
 import zimbraadmin.GetAccountInfoResponse;
 
@@ -44,35 +43,50 @@ public class MainController {
 	public String doAction(@RequestParam(value = "name") String name,  Model model) 
 	{
 		logger.debug("Received request to flush zimbra password cache");
-
-		logger.debug("Getting auth token for: username: " + adminName);
+		Map<String,Object> requestContext = ((BindingProvider) zimbraAdminPort).getRequestContext();
+		if (requestContext.get("authToken") != null) {
+			logger.debug("Removing old authToken in requestContext");
+			requestContext.remove("authToken");
+		}
+		
+		logger.debug("Getting auth token for admin user: " + adminName);
 		AuthRequest zmAuthRequest = new AuthRequest();
-		zmAuthRequest.setPersistAuthTokenCookie(true);
+		zmAuthRequest.setPersistAuthTokenCookie(false);
 		zmAuthRequest.setName(adminName);
 		zmAuthRequest.setPassword(adminPassword);
 		AuthResponse zmAuthResponse = zimbraAdminPort.authRequest(zmAuthRequest);
 		String authToken = zmAuthResponse.getAuthToken();
-		Map<String,Object> requestContext = ((BindingProvider) zimbraAdminPort).getRequestContext();
 		requestContext.put("authToken", authToken);
 		
 		logger.debug("Starting GetAccountInfoRequest for: " + name);
 		AccountSelector zmAccountSelector = new AccountSelector();
 		zmAccountSelector.setBy(AccountBy.NAME);
 		zmAccountSelector.setValue(name);
-		
 		GetAccountInfoRequest zmAccountInfoRequest = new GetAccountInfoRequest();
 		zmAccountInfoRequest.setAccount(zmAccountSelector);
-
 		GetAccountInfoResponse zmAccountInfoResponse = zimbraAdminPort.getAccountInfoRequest(zmAccountInfoRequest);
-
 		List<Attr> zmAttrs = zmAccountInfoResponse.getA();
 		String zmMailHost = null;
 		for (Attr attr : zmAttrs) {
+			logger.debug("Attr: " + attr.getN() + " Value: " + attr.getValue());
 			if (attr.getN().equalsIgnoreCase("zimbraMailHost")) {
 				zmMailHost = attr.getValue();
 				logger.debug("Got zimbraMailHost: " + zmMailHost);
 			}
 		}
+
+		/*logger.debug("Testing GetAccountRequest");
+		GetAccountRequest zmAccountRequest = new GetAccountRequest();
+		zmAccountRequest.setAccount(zmAccountSelector);
+		zmAccountRequest.setAttrs("zimbraMailHost");
+		GetAccountResponse zmAccountResponse = zimbraAdminPort.getAccountRequest(zmAccountRequest);
+		AccountInfo accountInfo = zmAccountResponse.getAccount();
+		logger.debug("Account ID: " + accountInfo.getId());
+		logger.debug("Account name: " + accountInfo.getName());
+		List<Attr> attrs = accountInfo.getA();
+		for (Attr attr : attrs) {
+			logger.debug("Attr: " + attr.getN() + ", Value: " + attr.getValue());
+		}*/
 
 		logger.debug("Starting FlushCache for: " + name + " on zimbraMailHost: " + zmMailHost);
 		CacheEntrySelector zmCacheEntrySelector = new CacheEntrySelector();
@@ -80,15 +94,13 @@ public class MainController {
 		zmCacheEntrySelector.setValue(zmMailHost);
 		CacheSelector zmCacheSelector = new CacheSelector();
 		zmCacheSelector.setType("server");
-		//zmCacheSelector.setAllServers(true);
+		zmCacheSelector.setAllServers(true);
 		zmCacheSelector.getEntry().add(zmCacheEntrySelector);
 		FlushCacheRequest zmFlushCacheRequest = new FlushCacheRequest();
 		zmFlushCacheRequest.setCache(zmCacheSelector);
+		zimbraAdminPort.flushCacheRequest(zmFlushCacheRequest);
 
-		FlushCacheResponse zmFlushCacheResponse = zimbraAdminPort.flushCacheRequest(zmFlushCacheRequest);
-
-		logger.debug("Done flushing password cache for: " + name + " (Response): " + zmFlushCacheResponse.toString());
-		model.addAttribute("response", zmAccountInfoResponse);
+		logger.debug("Done flushing password cache for: " + name);
 		
 		return "response";
 	}

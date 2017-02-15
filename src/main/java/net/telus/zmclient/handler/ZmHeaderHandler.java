@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.SOAPConstants;
 import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
