@@ -31,7 +31,6 @@ public class ZmHeaderHandler implements SOAPHandler<SOAPMessageContext> {
 				
 					System.out.println("Got authToken");
 					SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
-					//envelope.detachNode();
 					SOAPHeader header = envelope.getHeader();
 					if (header == null) {
 						header = envelope.addHeader();
@@ -39,13 +38,12 @@ public class ZmHeaderHandler implements SOAPHandler<SOAPMessageContext> {
 					System.out.println("Constructing header...");
 					QName headerContextName = new QName("urn:zimbra", "context","urn");
 					SOAPHeaderElement headerContext = header.addHeaderElement(headerContextName);
-					//headerContext.setActor(SOAPConstants.URI_SOAP_ACTOR_NEXT);
-					System.out.println("<header:context/>");
+					System.out.println("<urn:context/>");
 					QName authTokenName = new QName("urn:zimbra", "authToken","urn");
 					SOAPElement authTokenElement = headerContext.addChildElement(authTokenName);
-					System.out.println("<header:context><header:authToken/></header:context>");
+					System.out.println("<urn:context><urn:authToken/></urn:context>");
 					authTokenElement.addTextNode(authToken);
-					System.out.println("<header:context><header:authToken>?<header:authToken></header:context>");
+					System.out.println("<urn:context><urn:authToken>?</urn:authToken></urn:context>");
 					message.saveChanges();
 				}
 				//Print out the outbound SOAP message to System.out
@@ -88,7 +86,7 @@ public class ZmHeaderHandler implements SOAPHandler<SOAPMessageContext> {
 
 	@Override
 	public void close(MessageContext context) {
-		// TODO Auto-generated method stub
+		// NoOp
 	}
 
 	@Override
