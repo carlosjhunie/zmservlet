@@ -68,7 +68,7 @@ public class MainController {
 		List<Attr> zmAttrs = zmAccountInfoResponse.getA();
 		String zmMailHost = null;
 		for (Attr attr : zmAttrs) {
-			logger.debug("Attr: " + attr.getN() + " Value: " + attr.getValue());
+			logger.debug("Attr: " + attr.getN() + ", Value: " + attr.getValue());
 			if (attr.getN().equalsIgnoreCase("zimbraMailHost")) {
 				zmMailHost = attr.getValue();
 				logger.debug("Got zimbraMailHost: " + zmMailHost);
