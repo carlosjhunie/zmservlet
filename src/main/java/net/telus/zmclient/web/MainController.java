@@ -70,7 +70,7 @@ public class MainController {
 		for (Attr attr : zmAttrs) {
 			logger.debug("Attr: " + attr.getN() + ", Value: " + attr.getValue());
 			if (attr.getN().equalsIgnoreCase("zimbraMailHost")) {
-				zmMailHost = attr.getValue();
+				zmMailHost = attr.getValue();//use this value to create another jaxWsProxyBean with this server as endpoint
 				logger.debug("Got zimbraMailHost: " + zmMailHost);
 			}
 		}
@@ -91,9 +91,9 @@ public class MainController {
 		logger.debug("Starting FlushCache for: " + name + " on zimbraMailHost: " + zmMailHost);
 		CacheEntrySelector zmCacheEntrySelector = new CacheEntrySelector();
 		zmCacheEntrySelector.setBy(CacheEntryBy.NAME);
-		zmCacheEntrySelector.setValue(zmMailHost);
+		zmCacheEntrySelector.setValue(name);
 		CacheSelector zmCacheSelector = new CacheSelector();
-		zmCacheSelector.setType("server");
+		zmCacheSelector.setType("account");
 		zmCacheSelector.setAllServers(true);
 		zmCacheSelector.getEntry().add(zmCacheEntrySelector);
 		FlushCacheRequest zmFlushCacheRequest = new FlushCacheRequest();
