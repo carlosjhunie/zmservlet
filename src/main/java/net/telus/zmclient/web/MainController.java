@@ -36,8 +36,8 @@ public class MainController {
 	@Resource(name="zimbraJaxProxyService")
 	private ZcsAdminPortType zimbraAdminPort;
 	
-	private @Value("${zimbra.admin.username}") String adminName;// = "pwm-notification@telus.net";
-	private @Value("${zimbra.admin.password}") String adminPassword;// = "pwmsmtp";
+	private @Value("${zimbra.admin.username}") String adminName;
+	private @Value("${zimbra.admin.password}") String adminPassword;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String doAction(@RequestParam(value = "name") String name,  Model model) 
@@ -64,29 +64,19 @@ public class MainController {
 		zmAccountSelector.setValue(name);
 		GetAccountInfoRequest zmAccountInfoRequest = new GetAccountInfoRequest();
 		zmAccountInfoRequest.setAccount(zmAccountSelector);
-		GetAccountInfoResponse zmAccountInfoResponse = zimbraAdminPort.getAccountInfoRequest(zmAccountInfoRequest);
-		List<Attr> zmAttrs = zmAccountInfoResponse.getA();
 		String zmMailHost = null;
-		for (Attr attr : zmAttrs) {
-			logger.debug("Attr: " + attr.getN() + ", Value: " + attr.getValue());
-			if (attr.getN().equalsIgnoreCase("zimbraMailHost")) {
-				zmMailHost = attr.getValue();//use this value to create another jaxWsProxyBean with this server as endpoint
-				logger.debug("Got zimbraMailHost: " + zmMailHost);
+		GetAccountInfoResponse zmAccountInfoResponse = zimbraAdminPort.getAccountInfoRequest(zmAccountInfoRequest);//check for null here
+		if (zmAccountInfoResponse != null) {
+			List<Attr> zmAttrs = zmAccountInfoResponse.getA();
+			for (Attr attr : zmAttrs) {
+				logger.debug("Attr: " + attr.getN() + ", Value: " + attr.getValue());
+				if (attr.getN().equalsIgnoreCase("zimbraMailHost")) {
+					zmMailHost = attr.getValue();//use this value to create another jaxWsProxyBean with this server as endpoint
+					logger.debug("Got zimbraMailHost: " + zmMailHost);
+					break;
+				}
 			}
 		}
-
-		/*logger.debug("Testing GetAccountRequest");
-		GetAccountRequest zmAccountRequest = new GetAccountRequest();
-		zmAccountRequest.setAccount(zmAccountSelector);
-		zmAccountRequest.setAttrs("zimbraMailHost");
-		GetAccountResponse zmAccountResponse = zimbraAdminPort.getAccountRequest(zmAccountRequest);
-		AccountInfo accountInfo = zmAccountResponse.getAccount();
-		logger.debug("Account ID: " + accountInfo.getId());
-		logger.debug("Account name: " + accountInfo.getName());
-		List<Attr> attrs = accountInfo.getA();
-		for (Attr attr : attrs) {
-			logger.debug("Attr: " + attr.getN() + ", Value: " + attr.getValue());
-		}*/
 
 		logger.debug("Starting FlushCache for: " + name + " on zimbraMailHost: " + zmMailHost);
 		CacheEntrySelector zmCacheEntrySelector = new CacheEntrySelector();
@@ -94,14 +84,24 @@ public class MainController {
 		zmCacheEntrySelector.setValue(name);
 		CacheSelector zmCacheSelector = new CacheSelector();
 		zmCacheSelector.setType("account");
-		zmCacheSelector.setAllServers(true);
+		//zmCacheSelector.setAllServers(true);
 		zmCacheSelector.getEntry().add(zmCacheEntrySelector);
 		FlushCacheRequest zmFlushCacheRequest = new FlushCacheRequest();
 		zmFlushCacheRequest.setCache(zmCacheSelector);
+		changeZimbraWsProxy(zmMailHost);
 		zimbraAdminPort.flushCacheRequest(zmFlushCacheRequest);
 
 		logger.debug("Done flushing password cache for: " + name);
 		
 		return "response";
+	}
+	
+	private void changeZimbraWsProxy(String endpointHost) {
+		String endpointAddress = "https://" + endpointHost + ":7071/service/admin/soap/";
+		BindingProvider bp = (BindingProvider) zimbraAdminPort;
+		logger.debug("Endpoint address: " + bp.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
+		logger.debug("Setting new endpoint address to: " + endpointAddress);
+		bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
+		logger.debug("Endpoint address: " + bp.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
 	}
 }
