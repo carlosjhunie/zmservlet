@@ -36,7 +36,7 @@ public class MainController {
 	
 	private @Value("${zimbra.admin.username}") String adminName;
 	private @Value("${zimbra.admin.password}") String adminPassword;
-	private @Value("${zimbra.admin.endpointAddress") String adminSoapURL;
+	private @Value("${zimbra.admin.endpointAddress}") String adminSoapURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String doAction(@RequestParam(value = "name") String name,  Model model) 
