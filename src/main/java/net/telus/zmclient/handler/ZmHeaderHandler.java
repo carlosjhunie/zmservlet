@@ -33,26 +33,20 @@ public class ZmHeaderHandler implements SOAPHandler<SOAPMessageContext> {
 				if (context.containsKey("authToken")) {
 					authToken = (String) context.get("authToken");
 				
-					logger.debug("Got authToken");
 					SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
 					SOAPHeader header = envelope.getHeader();
 					if (header == null) {
 						header = envelope.addHeader();
 					}
-					logger.debug("Constructing header...");
 					QName headerContextName = new QName("urn:zimbra", "context","urn");
 					SOAPHeaderElement headerContext = header.addHeaderElement(headerContextName);
-					logger.debug("<urn:context/>");
 					QName authTokenName = new QName("urn:zimbra", "authToken","urn");
 					SOAPElement authTokenElement = headerContext.addChildElement(authTokenName);
-					logger.debug("<urn:context><urn:authToken/></urn:context>");
 					authTokenElement.addTextNode(authToken);
-					logger.debug("<urn:context><urn:authToken>?</urn:authToken></urn:context>");
 					message.saveChanges();
 				}
 				//Print out the outbound SOAP message to System.out
 				message.writeTo(System.out);
-				logger.debug("<eom>");
 			} catch (SOAPException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -64,7 +58,6 @@ public class ZmHeaderHandler implements SOAPHandler<SOAPMessageContext> {
 				//we just print out the SOAP message.
 				SOAPMessage message = context.getMessage();
 				message.writeTo(System.out);
-				logger.debug("<eom>");
 			} catch (SOAPException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -79,7 +72,6 @@ public class ZmHeaderHandler implements SOAPHandler<SOAPMessageContext> {
 		SOAPMessage message = context.getMessage();
 		try {
 			message.writeTo(System.out);
-			logger.debug("<eom>");
 		} catch (SOAPException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

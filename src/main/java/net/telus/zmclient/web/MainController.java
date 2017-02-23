@@ -1,6 +1,5 @@
 package net.telus.zmclient.web;
 
-import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import net.telus.zimbra.ws.client.ZcsAdminPortType;
 import zimbra.AccountBy;
 import zimbra.AccountSelector;
-import zimbraadmin.Attr;
 import zimbraadmin.AuthRequest;
 import zimbraadmin.AuthResponse;
 import zimbraadmin.CacheEntryBy;
@@ -65,17 +63,14 @@ public class MainController {
 		GetAccountInfoRequest zmAccountInfoRequest = new GetAccountInfoRequest();
 		zmAccountInfoRequest.setAccount(zmAccountSelector);
 		String zmMailHost = null;
-		GetAccountInfoResponse zmAccountInfoResponse = zimbraAdminPort.getAccountInfoRequest(zmAccountInfoRequest);//check for null here
+		GetAccountInfoResponse zmAccountInfoResponse = zimbraAdminPort.getAccountInfoRequest(zmAccountInfoRequest);
 		if (zmAccountInfoResponse != null) {
-			List<Attr> zmAttrs = zmAccountInfoResponse.getA();
-			for (Attr attr : zmAttrs) {
-				logger.debug("Attr: " + attr.getN() + ", Value: " + attr.getValue());
-				if (attr.getN().equalsIgnoreCase("zimbraMailHost")) {
-					zmMailHost = attr.getValue();//use this value to create another jaxWsProxyBean with this server as endpoint
-					logger.debug("Got zimbraMailHost: " + zmMailHost);
-					break;
-				}
-			}
+			String endpointAddress = zmAccountInfoResponse.getAdminSoapURL();
+			BindingProvider bp = (BindingProvider) zimbraAdminPort;
+			logger.debug("Endpoint address: " + bp.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
+			logger.debug("Setting new endpoint address to: " + endpointAddress);
+			bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
+			logger.debug("New endpoint address: " + bp.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
 		}
 
 		logger.debug("Starting FlushCache for: " + name + " on zimbraMailHost: " + zmMailHost);
@@ -84,24 +79,13 @@ public class MainController {
 		zmCacheEntrySelector.setValue(name);
 		CacheSelector zmCacheSelector = new CacheSelector();
 		zmCacheSelector.setType("account");
-		//zmCacheSelector.setAllServers(true);
 		zmCacheSelector.getEntry().add(zmCacheEntrySelector);
 		FlushCacheRequest zmFlushCacheRequest = new FlushCacheRequest();
 		zmFlushCacheRequest.setCache(zmCacheSelector);
-		changeZimbraWsProxy(zmMailHost);
 		zimbraAdminPort.flushCacheRequest(zmFlushCacheRequest);
 
 		logger.debug("Done flushing password cache for: " + name);
 		
 		return "response";
-	}
-	
-	private void changeZimbraWsProxy(String endpointHost) {
-		String endpointAddress = "https://" + endpointHost + ":7071/service/admin/soap/";
-		BindingProvider bp = (BindingProvider) zimbraAdminPort;
-		logger.debug("Endpoint address: " + bp.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
-		logger.debug("Setting new endpoint address to: " + endpointAddress);
-		bp.getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
-		logger.debug("Endpoint address: " + bp.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
 	}
 }
