@@ -36,6 +36,7 @@ public class MainController {
 	
 	private @Value("${zimbra.admin.username}") String adminName;
 	private @Value("${zimbra.admin.password}") String adminPassword;
+	private @Value("${zimbra.admin.endpointAddress") String adminSoapURL;
 
 	@RequestMapping(method = RequestMethod.GET)
 	public String doAction(@RequestParam(value = "name") String name,  Model model) 
@@ -62,7 +63,6 @@ public class MainController {
 		zmAccountSelector.setValue(name);
 		GetAccountInfoRequest zmAccountInfoRequest = new GetAccountInfoRequest();
 		zmAccountInfoRequest.setAccount(zmAccountSelector);
-		String zmMailHost = null;
 		GetAccountInfoResponse zmAccountInfoResponse = zimbraAdminPort.getAccountInfoRequest(zmAccountInfoRequest);
 		if (zmAccountInfoResponse != null) {
 			String endpointAddress = zmAccountInfoResponse.getAdminSoapURL();
@@ -73,7 +73,7 @@ public class MainController {
 			logger.debug("New endpoint address: " + bp.getRequestContext().get(BindingProvider.ENDPOINT_ADDRESS_PROPERTY));
 		}
 
-		logger.debug("Starting FlushCache for: " + name + " on zimbraMailHost: " + zmMailHost);
+		logger.debug("Starting FlushCache for account: " + name);
 		CacheEntrySelector zmCacheEntrySelector = new CacheEntrySelector();
 		zmCacheEntrySelector.setBy(CacheEntryBy.NAME);
 		zmCacheEntrySelector.setValue(name);
@@ -83,6 +83,9 @@ public class MainController {
 		FlushCacheRequest zmFlushCacheRequest = new FlushCacheRequest();
 		zmFlushCacheRequest.setCache(zmCacheSelector);
 		zimbraAdminPort.flushCacheRequest(zmFlushCacheRequest);
+		
+		//change adminSoapURL back to the default (logger server)
+		((BindingProvider) zimbraAdminPort).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, adminSoapURL);
 
 		logger.debug("Done flushing password cache for: " + name);
 		
