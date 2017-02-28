@@ -83,12 +83,11 @@ public class MainController {
 		FlushCacheRequest zmFlushCacheRequest = new FlushCacheRequest();
 		zmFlushCacheRequest.setCache(zmCacheSelector);
 		zimbraAdminPort.flushCacheRequest(zmFlushCacheRequest);
+		logger.debug("Done flushing password cache for: " + name);
 		
 		//change adminSoapURL back to the default (logger server)
 		((BindingProvider) zimbraAdminPort).getRequestContext().put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, adminSoapURL);
 
-		logger.debug("Done flushing password cache for: " + name);
-		
 		return "response";
 	}
 }

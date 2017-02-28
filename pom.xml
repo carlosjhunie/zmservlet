@@ -107,7 +107,7 @@
 	</dependencies>
 
 	<build>
-        <finalName>pwm-flush-${project.version}</finalName>
+        <finalName>pwm-flush</finalName>
 	    <plugins>
 	  	    <plugin>
 	  	    	<groupId>org.apache.maven.plugins</groupId>
